@@ -1,0 +1,10 @@
+server:
+  port: 8084
+
+spring:
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+        url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1
+        name:
+        username: fpla
+        password:
