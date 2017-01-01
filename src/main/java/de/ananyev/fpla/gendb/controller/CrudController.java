@@ -63,4 +63,10 @@ public class CrudController {
 			this.jdbcTemplate.execute(sql);
 		});
 	}
+
+	@DeleteMapping("/{id}")
+	public void delete(@PathVariable String tableName, @PathVariable Long id) {
+		String sql = String.format("delete from %s where id = %d", tableName, id);
+		this.jdbcTemplate.execute(sql);
+	}
 }
