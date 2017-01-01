@@ -33,6 +33,7 @@ public class TableGenerationController {
 		removeTable(tableDefinition.getTableName());
 		// prepare
 		ArrayList<String> rowStrings = new ArrayList<>();
+		rowStrings.add("id int auto_increment primary key");
 		tableDefinition.getColumnDefinitions().forEach(it -> {
 			rowStrings.add(String.format("%s %s", it.getName(), it.getType()));
 		});
