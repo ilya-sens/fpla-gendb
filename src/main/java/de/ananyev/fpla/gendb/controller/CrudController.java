@@ -1,4 +1,4 @@
-package de.ananyev.fpla.gendb;
+package de.ananyev.fpla.gendb.controller;
 
 import de.ananyev.fpla.gendb.model.ColumnDefinition;
 import de.ananyev.fpla.gendb.model.TableDefinition;
@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Ilya Ananyev on 24.12.16.
+ * Created by Ilya Ananyev on 01.01.17.
  */
 @RestController
-@RequestMapping("/table")
-public class GenDBController {
+@RequestMapping("/crud/{tableName}")
+public class CrudController {
 	@Inject
-	JdbcTemplate jdbcTemplate;
+	private JdbcTemplate jdbcTemplate;
 
 	@Inject
 	private ColumnDefinitionRepository columnDefinitionRepository;
@@ -29,33 +29,6 @@ public class GenDBController {
 	private TableDefinitionRepository tableDefinitionRepository;
 
 	@PostMapping
-	public void createTable(@RequestBody TableDefinition tableDefinition) {
-		removeTable(tableDefinition.getTableName());
-		// prepare
-		ArrayList<String> rowStrings = new ArrayList<>();
-		tableDefinition.getColumnDefinitions().forEach(it -> {
-			rowStrings.add(String.format("%s %s", it.getName(), it.getType()));
-		});
-
-		// execute
-		String sql = String.format("create table %s (", tableDefinition.getTableName())
-				+ String.join(", ", rowStrings) +")";
-		this.jdbcTemplate.execute(sql);
-
-		// save
-		this.tableDefinitionRepository.save(tableDefinition);
-		tableDefinition.getColumnDefinitions().forEach(it -> {
-			it.setTableDefinition(tableDefinition);
-			this.columnDefinitionRepository.save(it);
-		});
-	}
-
-	@GetMapping("/{tableName}")
-	public List getFrom(@PathVariable String tableName) {
-		return this.jdbcTemplate.queryForList(String.format("select * from %s", tableName));
-	}
-
-	@PostMapping("/insert/{tableName}")
 	public void insert(@PathVariable String tableName, @RequestBody List<Map<String, String>> keyValueList)
 			throws TableNotFoundException {
 		TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName)
@@ -89,12 +62,5 @@ public class GenDBController {
 			String sql = String.format("insert into %s set ", tableName) + String.join(", ", rowStrings);
 			this.jdbcTemplate.execute(sql);
 		});
-	}
-
-	@DeleteMapping("/{tableName}")
-	public void removeTable(@PathVariable String tableName) {
-		this.jdbcTemplate.execute(String.format("drop table if exists %s", tableName));
-		this.tableDefinitionRepository.findOneByTableName(tableName)
-				.ifPresent(columnDefinition -> this.tableDefinitionRepository.delete(columnDefinition));
 	}
 }
