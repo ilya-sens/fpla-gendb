@@ -4,6 +4,7 @@ package de.ananyev.fpla.gendb.model.enumeration;
  * Created by Ilya Ananyev on 30.12.16.
  */
 public enum ColumnType {
+	// date: yyyy-MM-dd hh:mm:ss[.nnnnnnnnn]
 	bool, text, number, date;
 
 	public String toString() {
