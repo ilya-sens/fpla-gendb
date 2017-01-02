@@ -1,17 +1,15 @@
 package de.ananyev.fpla.gendb.controller;
 
-import de.ananyev.fpla.gendb.model.ColumnDefinition;
 import de.ananyev.fpla.gendb.model.TableDefinition;
 import de.ananyev.fpla.gendb.repository.ColumnDefinitionRepository;
 import de.ananyev.fpla.gendb.repository.TableDefinitionRepository;
-import de.ananyev.fpla.gendb.util.exception.TableNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Ilya Ananyev on 24.12.16.
@@ -59,8 +57,11 @@ public class TableGenerationController {
 
 	@DeleteMapping("/{tableName}")
 	public void removeTable(@PathVariable String tableName) {
-		this.jdbcTemplate.execute(String.format("drop table if exists %s", tableName));
 		this.tableDefinitionRepository.findOneByTableName(tableName)
-				.ifPresent(columnDefinition -> this.tableDefinitionRepository.delete(columnDefinition));
+				.ifPresent(tableDefinition -> {
+					this.columnDefinitionRepository.deleteByTableDefinition(tableDefinition);
+					this.tableDefinitionRepository.delete(tableDefinition);
+				});
+		this.jdbcTemplate.execute(String.format("drop table if exists %s", tableName));
 	}
 }

@@ -7,7 +7,7 @@ spring:
       ddl-auto: create
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_UPPER=false
     name:
     username: fpla
     password:

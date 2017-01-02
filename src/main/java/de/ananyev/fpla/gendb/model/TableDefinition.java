@@ -27,11 +27,11 @@ public class TableDefinition {
 	}
 
 	public String getTableName() {
-		return tableName;
+		return tableName.toUpperCase();
 	}
 
 	public void setTableName(String tableName) {
-		this.tableName = tableName;
+		this.tableName = tableName.toUpperCase();
 	}
 
 	public List<ColumnDefinition> getColumnDefinitions() {
