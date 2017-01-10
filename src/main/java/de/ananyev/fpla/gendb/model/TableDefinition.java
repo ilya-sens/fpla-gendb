@@ -1,5 +1,7 @@
 package de.ananyev.fpla.gendb.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -16,6 +18,7 @@ public class TableDefinition {
 	private String tableName;
 
 	@OneToMany(mappedBy = "tableDefinition")
+	@JsonManagedReference
 	private List<ColumnDefinition> columnDefinitions;
 
 	public Long getId() {

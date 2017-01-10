@@ -1,10 +1,10 @@
 package de.ananyev.fpla.gendb.controller;
 
 import de.ananyev.fpla.gendb.model.TableDefinition;
+import de.ananyev.fpla.gendb.model.enumeration.ColumnType;
 import de.ananyev.fpla.gendb.repository.ColumnDefinitionRepository;
 import de.ananyev.fpla.gendb.repository.TableDefinitionRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
@@ -28,7 +28,11 @@ public class TableGenerationController {
 
 	@PostMapping
 	public void createTable(@RequestBody TableDefinition tableDefinition) {
-		removeTable(tableDefinition.getTableName());
+		this.tableDefinitionRepository.findOneByTableName(tableDefinition.getTableName()).ifPresent((it) -> {
+				removeTable(it.getId());
+			}
+		);
+		this.jdbcTemplate.execute(String.format("drop table if exists %s", tableDefinition.getTableName()));
 		// prepare
 		ArrayList<String> rowStrings = new ArrayList<>();
 		rowStrings.add("id int auto_increment primary key");
@@ -49,19 +53,26 @@ public class TableGenerationController {
 		});
 	}
 
-	@GetMapping("/{tableName}")
-	public List getFrom(@PathVariable String tableName) {
-		return this.jdbcTemplate.queryForList(String.format("select * from %s", tableName));
+	@GetMapping("/{id}")
+	public TableDefinition get(@PathVariable Long id) {
+		return this.tableDefinitionRepository.findOne(id);
 	}
 
+	@GetMapping
+	public List listTables() {
+		return this.tableDefinitionRepository.findAll();
+	}
 
-	@DeleteMapping("/{tableName}")
-	public void removeTable(@PathVariable String tableName) {
-		this.tableDefinitionRepository.findOneByTableName(tableName)
-				.ifPresent(tableDefinition -> {
-					this.columnDefinitionRepository.deleteByTableDefinition(tableDefinition);
-					this.tableDefinitionRepository.delete(tableDefinition);
-				});
-		this.jdbcTemplate.execute(String.format("drop table if exists %s", tableName));
+	@DeleteMapping("/{id}")
+	public void removeTable(@PathVariable Long id) {
+		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(id);
+		this.columnDefinitionRepository.deleteByTableDefinition(tableDefinition);
+		this.tableDefinitionRepository.delete(tableDefinition);
+		this.jdbcTemplate.execute(String.format("drop table if exists %s", tableDefinition.getTableName()));
+	}
+
+	@GetMapping("/columnTypes")
+	public ColumnType[] getColumnTypes() {
+		return ColumnType.values();
 	}
 }

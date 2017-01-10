@@ -1,5 +1,6 @@
 package de.ananyev.fpla.gendb.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import de.ananyev.fpla.gendb.model.enumeration.ColumnType;
 
 import javax.persistence.*;
@@ -21,6 +22,7 @@ public class ColumnDefinition {
 
 	@ManyToOne
 	@JoinColumn
+	@JsonBackReference
 	private TableDefinition tableDefinition;
 
 	public String getName() {

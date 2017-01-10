@@ -2,12 +2,14 @@ server:
   port: 8084
 
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: create
+  application:
+    name: fpla-gendb
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_UPPER=false
+    url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_UPPER=false2
     name:
     username: fpla
     password:
