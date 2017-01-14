@@ -9,7 +9,7 @@ import java.util.List;
  * Created by Ilya Ananyev on 26.12.16.
  */
 @Entity
-@Table(name = "tableDefinition")
+@Table
 public class TableDefinition {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

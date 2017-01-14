@@ -9,7 +9,7 @@ import javax.persistence.*;
  * Created by Ilya Ananyev on 26.12.16.
  */
 @Entity
-@Table(name = "columnDefinition")
+@Table
 public class ColumnDefinition {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

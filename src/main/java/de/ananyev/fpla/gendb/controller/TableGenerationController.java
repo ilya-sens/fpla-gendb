@@ -42,7 +42,7 @@ public class TableGenerationController {
 
 		// execute
 		String sql = String.format("create table %s (", tableDefinition.getTableName())
-				+ String.join(", ", rowStrings) +")";
+				+ String.join(", ", rowStrings) + ")";
 		this.jdbcTemplate.execute(sql);
 
 		// save
