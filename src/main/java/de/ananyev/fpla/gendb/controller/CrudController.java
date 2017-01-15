@@ -48,6 +48,14 @@ public class CrudController {
 		return result;
 	}
 
+	@GetMapping("/{id}")
+	public Map<String, Object> getRow(@PathVariable Long tableId, @PathVariable Long id) {
+		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
+		String sql = String.format("select * from %s where ID = %d", tableDefinition.getTableName(), id);
+		Map<String, Object> result = this.jdbcTemplate.queryForMap(sql);
+		return result;
+	}
+
 	@PutMapping("/{id}")
 	public void update(
 			@PathVariable Long tableId,
