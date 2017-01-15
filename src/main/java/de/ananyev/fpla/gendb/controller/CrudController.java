@@ -57,14 +57,14 @@ public class CrudController {
 		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
 		ArrayList<String> rowStrings = this.generateRowStrings(keyValue, tableDefinition);
 		String sql = String.format("update %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings)
-				+ String.format(" where id = %d", id);
+				+ String.format(" where ID = %d", id);
 		this.jdbcTemplate.execute(sql);
 	}
 
 	@DeleteMapping("/{id}")
 	public void delete(@PathVariable Long tableId, @PathVariable Long id) {
 		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
-		String sql = String.format("delete from %s where id = %d", tableDefinition.getTableName(), id);
+		String sql = String.format("delete from %s where ID = %d", tableDefinition.getTableName(), id);
 		this.jdbcTemplate.execute(sql);
 	}
 

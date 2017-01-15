@@ -1,5 +1,6 @@
 package de.ananyev.fpla.gendb.controller;
 
+import de.ananyev.fpla.gendb.model.ColumnDefinition;
 import de.ananyev.fpla.gendb.model.TableDefinition;
 import de.ananyev.fpla.gendb.model.enumeration.ColumnType;
 import de.ananyev.fpla.gendb.repository.ColumnDefinitionRepository;
@@ -47,6 +48,10 @@ public class TableGenerationController {
 
 		// save
 		this.tableDefinitionRepository.save(tableDefinition);
+		ColumnDefinition idColumnDefinition = new ColumnDefinition();
+		idColumnDefinition.setName("ID");
+		idColumnDefinition.setType(ColumnType.number);
+		tableDefinition.getColumnDefinitions().add(0, idColumnDefinition);
 		tableDefinition.getColumnDefinitions().forEach(it -> {
 			it.setTableDefinition(tableDefinition);
 			this.columnDefinitionRepository.save(it);

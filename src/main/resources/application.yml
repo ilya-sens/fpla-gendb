@@ -16,3 +16,7 @@ spring:
     name:
     username: fpla
     password:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
