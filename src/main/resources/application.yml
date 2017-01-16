@@ -12,7 +12,7 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_UPPER=false2
+    url: jdbc:h2:file:./target/h2db/db/fplagendb;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_UPPER=true
     name:
     username: fpla
     password:
