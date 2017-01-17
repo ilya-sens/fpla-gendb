@@ -34,7 +34,7 @@ public class CrudController {
 			throws TableNotFoundException {
 		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
 		keyValueList.forEach((row) -> {
-			ArrayList<String> rowStrings = this.generateRowStrings(row, tableDefinition);
+			ArrayList<String> rowStrings = this.generateRowStrings(row, tableDefinition, true);
 			String sql = String.format("insert into %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings);
 			this.jdbcTemplate.execute(sql);
 		});
@@ -63,7 +63,7 @@ public class CrudController {
 			@RequestBody Map<String, String> keyValue
 	) throws TableNotFoundException {
 		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
-		ArrayList<String> rowStrings = this.generateRowStrings(keyValue, tableDefinition);
+		ArrayList<String> rowStrings = this.generateRowStrings(keyValue, tableDefinition, false);
 		String sql = String.format("update %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings)
 				+ String.format(" where ID = %d", id);
 		this.jdbcTemplate.execute(sql);
@@ -76,26 +76,28 @@ public class CrudController {
 		this.jdbcTemplate.execute(sql);
 	}
 
-	private ArrayList<String> generateRowStrings(Map<String, String> keyValue, TableDefinition tableDefinition) {
+	private ArrayList<String> generateRowStrings(Map<String, String> keyValue, TableDefinition tableDefinition, boolean skipEmpty) {
 		ArrayList<String> rowStrings = new ArrayList<>();
 		keyValue.keySet().forEach((columnName) -> {
-			ColumnDefinition columnDefinition = this.columnDefinitionRepository
-					.findOneByTableDefinitionAndName(tableDefinition, columnName);
-			switch (columnDefinition.getType()) {
-				case bool:
-					boolean columnValueBoolean = Boolean.parseBoolean(keyValue.get(columnName));
-					rowStrings.add(String.format("%s = %b", columnName, columnValueBoolean));
-					break;
-				case date:
-					rowStrings.add(String.format("%s = '%s'", columnName, keyValue.get(columnName)));
-					break;
-				case number:
-					int columnValueInteger = Integer.parseInt(keyValue.get(columnName));
-					rowStrings.add(String.format("%s = %d", columnName, columnValueInteger));
-					break;
-				case text:
-					rowStrings.add(String.format("%s = '%s'", columnName, keyValue.get(columnName)));
-					break;
+			if (!skipEmpty || !keyValue.get(columnName).equals("")) {
+				ColumnDefinition columnDefinition = this.columnDefinitionRepository
+						.findOneByTableDefinitionAndName(tableDefinition, columnName);
+				switch (columnDefinition.getType()) {
+					case bool:
+						boolean columnValueBoolean = Boolean.parseBoolean(keyValue.get(columnName));
+						rowStrings.add(String.format("%s = %b", columnName, columnValueBoolean));
+						break;
+					case date:
+						rowStrings.add(String.format("%s = '%s'", columnName, keyValue.get(columnName)));
+						break;
+					case number:
+						int columnValueInteger = Integer.parseInt(keyValue.get(columnName));
+						rowStrings.add(String.format("%s = %d", columnName, columnValueInteger));
+						break;
+					case text:
+						rowStrings.add(String.format("%s = '%s'", columnName, keyValue.get(columnName)));
+						break;
+				}
 			}
 		});
 		return rowStrings;
