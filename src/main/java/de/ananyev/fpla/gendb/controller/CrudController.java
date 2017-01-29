@@ -1,7 +1,7 @@
 package de.ananyev.fpla.gendb.controller;
 
 import de.ananyev.fpla.gendb.model.ColumnDefinition;
-import de.ananyev.fpla.gendb.model.SearchCriteria;
+import de.ananyev.fpla.lib.model.SearchCriteria;
 import de.ananyev.fpla.gendb.model.TableDefinition;
 import de.ananyev.fpla.gendb.model.enumeration.ColumnType;
 import de.ananyev.fpla.gendb.repository.ColumnDefinitionRepository;
@@ -151,28 +151,11 @@ public class CrudController {
 	}
 
 	/**
-	 * Example of
-	 * <p>
-	 * bool:
-	 * "true"
-	 * "false"
-	 * "!true"
-	 * <p>
-	 * number:
-	 * "10"
-	 * "<10"
-	 * ">=10|<20|!15"
-	 * "!10"
-	 * <p>
-	 * text:
-	 * "hello world"
-	 * "*ello*"
-	 * "!hello world|!byebye world"
-	 * "!*world"
-	 * <p>
-	 * date:
-	 * "2017-01-01 12:43:00"
-	 * ">=2017-01-01 12:43:00|<2017-01-05 12:43:00"
+	 * Examples:
+	 * bool: "true", "false", "!true"
+	 * number: "10", "<10", ">=10|<20|!15", "!10"
+	 * text: "hello world", "*ello*", "!hello world|!byebye world", "!*world"
+	 * date: "2017-01-01 12:43:00", ">=2017-01-01 12:43:00|<2017-01-05 12:43:00"
 	 *
 	 * @param columnType
 	 * @param columnName
