@@ -56,4 +56,19 @@ public class ColumnDefinition {
 	public void setTableDefinition(TableDefinition tableDefinition) {
 		this.tableDefinition = tableDefinition;
 	}
+
+	public boolean equals(ColumnDefinition anotherColumnDefinition) {
+		return name.equals(anotherColumnDefinition.getName()) &&
+				id.equals(anotherColumnDefinition.getId()) &&
+				type.equals(anotherColumnDefinition.getType()) &&
+				tableDefinition.getId().equals(anotherColumnDefinition.getTableDefinition().getId());
+	}
+
+	public String toString() {
+		return "Scenario{" +
+				"id=" + id +
+				", name='" + name + "'" +
+				", type='" + type + "'" +
+				'}';
+	}
 }

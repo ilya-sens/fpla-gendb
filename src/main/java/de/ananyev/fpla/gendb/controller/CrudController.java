@@ -41,7 +41,7 @@ public class CrudController {
 	}
 
 	@GetMapping
-	public List<Map<String, Object>> getAll(@PathVariable Long tableId, @RequestParam("blabla") String searchCriteria) {
+	public List<Map<String, Object>> getAll(@PathVariable Long tableId) {
 		TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
 		String sql = String.format("select * from %s", tableDefinition.getTableName());
 		List<Map<String, Object>> result = this.jdbcTemplate.queryForList(sql);
