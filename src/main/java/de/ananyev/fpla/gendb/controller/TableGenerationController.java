@@ -72,6 +72,8 @@ public class TableGenerationController {
 
 		// update table if need
 		if (!tableDefinition.getTableName().equals(inputTableDefinition.getTableName())) {
+			this.jdbcTemplate.execute(String.format("alter table %s rename to %s", tableDefinition.getTableName(),
+					inputTableDefinition.getTableName()));
 			this.tableDefinitionRepository.save(inputTableDefinition);
 		}
 
@@ -84,8 +86,16 @@ public class TableGenerationController {
 			// ignore the found column if exists and definition equals incoming one
 			if (optionalColumnDefinition.isPresent()) {
 				ColumnDefinition foundColumnDefinition = optionalColumnDefinition.get();
-				if (!foundColumnDefinition.getName().equals(inputColumnDefinition.getName())
-						|| !foundColumnDefinition.getType().equals(inputColumnDefinition.getType())) {
+				if (!foundColumnDefinition.getName().equals(inputColumnDefinition.getName())) {
+					this.jdbcTemplate.execute(String.format("alter table %s alter column %s rename to %s",
+							inputTableDefinition.getTableName(), foundColumnDefinition.getName(),
+							inputColumnDefinition.getName()));
+					this.columnDefinitionRepository.save(inputColumnDefinition);
+				}
+				if (!foundColumnDefinition.getType().equals(inputColumnDefinition.getType())) {
+					this.jdbcTemplate.execute(String.format("alter table %s alter column %s %s",
+							inputTableDefinition.getTableName(), inputColumnDefinition.getName(),
+							inputColumnDefinition.getType()));
 					this.columnDefinitionRepository.save(inputColumnDefinition);
 				}
 			} else {
