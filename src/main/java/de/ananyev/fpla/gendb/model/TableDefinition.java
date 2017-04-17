@@ -11,37 +11,37 @@ import java.util.List;
 @Entity
 @Table
 public class TableDefinition {
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-	private String tableName;
+    private String tableName;
 
-	@OneToMany(mappedBy = "tableDefinition")
-	@JsonManagedReference
-	private List<ColumnDefinition> columnDefinitions;
+    @OneToMany(mappedBy = "tableDefinition")
+    @JsonManagedReference
+    private List<ColumnDefinition> columnDefinitions;
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getTableName() {
-		return tableName.toUpperCase();
-	}
+    public String getTableName() {
+        return tableName.toUpperCase();
+    }
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName.toUpperCase();
-	}
+    public void setTableName(String tableName) {
+        this.tableName = tableName.toUpperCase();
+    }
 
-	public List<ColumnDefinition> getColumnDefinitions() {
-		return columnDefinitions;
-	}
+    public List<ColumnDefinition> getColumnDefinitions() {
+        return columnDefinitions;
+    }
 
-	public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
-		this.columnDefinitions = columnDefinitions;
-	}
+    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
+    }
 }

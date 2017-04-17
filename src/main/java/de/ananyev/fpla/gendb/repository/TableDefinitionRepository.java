@@ -9,5 +9,5 @@ import java.util.Optional;
  * Created by Ilya Ananyev on 30.12.16.
  */
 public interface TableDefinitionRepository extends JpaRepository<TableDefinition, Long> {
-	Optional<TableDefinition> findOneByTableName(String tableName);
+    Optional<TableDefinition> findOneByTableName(String tableName);
 }
