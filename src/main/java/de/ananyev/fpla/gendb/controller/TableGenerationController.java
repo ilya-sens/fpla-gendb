@@ -1,21 +1,21 @@
 package de.ananyev.fpla.gendb.controller;
 
+import com.google.common.collect.Lists;
 import de.ananyev.fpla.gendb.model.ColumnDefinition;
 import de.ananyev.fpla.gendb.model.TableDefinition;
 import de.ananyev.fpla.gendb.model.enumeration.ColumnType;
 import de.ananyev.fpla.gendb.repository.ColumnDefinitionRepository;
 import de.ananyev.fpla.gendb.repository.TableDefinitionRepository;
+import de.ananyev.fpla.gendb.util.SqlExecuterUtil;
 import de.ananyev.fpla.gendb.util.exception.TableNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
+ * Table generation: CRUD for generic tables.
  * Created by Ilya Ananyev on 24.12.16.
  */
 @RestController
@@ -31,7 +31,7 @@ public class TableGenerationController {
 	private TableDefinitionRepository tableDefinitionRepository;
 
 	@PostMapping
-	public void createTable(@RequestBody TableDefinition tableDefinition) {
+	public TableDefinition createTable(@RequestBody TableDefinition tableDefinition) {
 		this.tableDefinitionRepository.findOneByTableName(tableDefinition.getTableName()).ifPresent((it) -> {
 					removeTable(it.getId());
 				}
@@ -47,7 +47,7 @@ public class TableGenerationController {
 		// execute
 		String sql = String.format("create table %s (", tableDefinition.getTableName())
 				+ String.join(", ", rowStrings) + ")";
-		this.jdbcTemplate.execute(sql);
+		SqlExecuterUtil.execute(this.jdbcTemplate, sql).longValue();
 
 		// save
 		this.tableDefinitionRepository.save(tableDefinition);
@@ -59,49 +59,67 @@ public class TableGenerationController {
 			it.setTableDefinition(tableDefinition);
 			this.columnDefinitionRepository.save(it);
 		});
+
+		return tableDefinition;
 	}
 
 	@PutMapping()
-	public void updateTable(@RequestBody TableDefinition inputTableDefinition)
+	public TableDefinition updateTable(@RequestBody TableDefinition inputTableDefinition)
 			throws TableNotFoundException {
-		TableDefinition tableDefinition = this.tableDefinitionRepository
+		TableDefinition existingTableDefinition = this.tableDefinitionRepository
 				.findOne(inputTableDefinition.getId());
-		if (tableDefinition == null) {
+		if (existingTableDefinition == null) {
 			throw new TableNotFoundException();
 		}
 
 		// update table if need
-		if (!tableDefinition.getTableName().equals(inputTableDefinition.getTableName())) {
-			this.jdbcTemplate.execute(String.format("alter table %s rename to %s", tableDefinition.getTableName(),
+		if (!existingTableDefinition.getTableName().equals(inputTableDefinition.getTableName())) {
+			this.jdbcTemplate.execute(String.format("alter table %s rename to %s", existingTableDefinition.getTableName(),
 					inputTableDefinition.getTableName()));
-			this.tableDefinitionRepository.save(inputTableDefinition);
+			TableDefinition updatedTableDefinition = this.tableDefinitionRepository.save(inputTableDefinition);
 		}
 
-		// check which column definitions need to be updated
-		inputTableDefinition.getColumnDefinitions().forEach((inputColumnDefinition) -> {
-			Optional<ColumnDefinition> optionalColumnDefinition = tableDefinition.getColumnDefinitions().stream()
-					.filter(existingColumnDefinition -> !inputColumnDefinition.getName().equals("ID")
-							&& Objects.equals(inputColumnDefinition.getId(), existingColumnDefinition.getId()))
-					.findAny();
-			// ignore the found column if exists and definition equals incoming one
-			if (optionalColumnDefinition.isPresent()) {
-				ColumnDefinition foundColumnDefinition = optionalColumnDefinition.get();
-				if (!foundColumnDefinition.getName().equals(inputColumnDefinition.getName())) {
-					this.jdbcTemplate.execute(String.format("alter table %s alter column %s rename to %s",
-							inputTableDefinition.getTableName(), foundColumnDefinition.getName(),
-							inputColumnDefinition.getName()));
+		List<ColumnDefinition> inputColumnDefinitions = inputTableDefinition.getColumnDefinitions(),
+				existingColumnDefinitions = existingTableDefinition.getColumnDefinitions();
+		// check if column definitions are equal
+		if (!Arrays.deepEquals(inputColumnDefinitions.toArray(), existingColumnDefinitions.toArray())) {
+            // remove columns definitions that are not exist in input column definitions
+			existingColumnDefinitions.forEach((existingColumnDefinition) -> {
+			    boolean isDeleted = inputColumnDefinitions.stream().noneMatch(inputColumnDefinition ->
+                    Objects.equals(inputColumnDefinition.getId(), existingColumnDefinition.getId()));
+			    if (isDeleted) {
+                    this.columnDefinitionRepository.delete(existingColumnDefinition.getId());
+                }
+			});
+
+			// check which column definitions need to be updated
+			inputTableDefinition.getColumnDefinitions().forEach((inputColumnDefinition) -> {
+				Optional<ColumnDefinition> optionalColumnDefinition = existingColumnDefinitions.stream()
+						.filter(existingColumnDefinition -> !inputColumnDefinition.getName().equals("ID")
+								&& Objects.equals(inputColumnDefinition.getId(), existingColumnDefinition.getId()))
+						.findAny();
+				// ignore the found column if exists and definition equals incoming one
+				if (optionalColumnDefinition.isPresent()) {
+					ColumnDefinition foundColumnDefinition = optionalColumnDefinition.get();
+					if (!foundColumnDefinition.getName().equals(inputColumnDefinition.getName())) {
+						this.jdbcTemplate.execute(String.format("alter table %s alter column %s rename to %s",
+								inputTableDefinition.getTableName(), foundColumnDefinition.getName(),
+								inputColumnDefinition.getName()));
+						this.columnDefinitionRepository.save(inputColumnDefinition);
+					}
+					if (!foundColumnDefinition.getType().equals(inputColumnDefinition.getType())) {
+						this.jdbcTemplate.execute(String.format("alter table %s alter column %s %s",
+								inputTableDefinition.getTableName(), inputColumnDefinition.getName(),
+								inputColumnDefinition.getType()));
+						this.columnDefinitionRepository.save(inputColumnDefinition);
+					}
+				} else {
 					this.columnDefinitionRepository.save(inputColumnDefinition);
 				}
-				if (!foundColumnDefinition.getType().equals(inputColumnDefinition.getType())) {
-					this.jdbcTemplate.execute(String.format("alter table %s alter column %s %s",
-							inputTableDefinition.getTableName(), inputColumnDefinition.getName(),
-							inputColumnDefinition.getType()));
-					this.columnDefinitionRepository.save(inputColumnDefinition);
-				}
-			} else {
-				this.columnDefinitionRepository.save(inputColumnDefinition);
-			}
-		});
+			});
+		}
+
+		return existingTableDefinition;
 	}
 
 	@GetMapping("/{id}")
@@ -110,7 +128,7 @@ public class TableGenerationController {
 	}
 
 	@GetMapping
-	public List listTables() {
+	public List<TableDefinition> listTables() {
 		return this.tableDefinitionRepository.findAll();
 	}
 

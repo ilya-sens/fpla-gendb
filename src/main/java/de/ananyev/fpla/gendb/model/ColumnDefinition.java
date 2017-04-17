@@ -57,7 +57,9 @@ public class ColumnDefinition {
 		this.tableDefinition = tableDefinition;
 	}
 
-	public boolean equals(ColumnDefinition anotherColumnDefinition) {
+	@Override
+	public boolean equals(Object object) {
+		ColumnDefinition anotherColumnDefinition = (ColumnDefinition)object;
 		return name.equals(anotherColumnDefinition.getName()) &&
 				id.equals(anotherColumnDefinition.getId()) &&
 				type.equals(anotherColumnDefinition.getType()) &&
@@ -65,7 +67,7 @@ public class ColumnDefinition {
 	}
 
 	public String toString() {
-		return "Scenario{" +
+		return "ColumnDefinition{" +
 				"id=" + id +
 				", name='" + name + "'" +
 				", type='" + type + "'" +
