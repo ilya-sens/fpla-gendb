@@ -30,7 +30,7 @@ public class CrudController {
 
     // insert into <tableName> set <columnName1> = <value1>, <columnName2> = <value2>;
     @PostMapping
-    public void insert(@PathVariable Long tableId, @RequestBody List<Map<String, String>> keyValueList)
+    public List<Map<String, Object>> insert(@PathVariable Long tableId, @RequestBody List<Map<String, String>> keyValueList)
             throws TableNotFoundException {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
         keyValueList.forEach((row) -> {
@@ -38,6 +38,7 @@ public class CrudController {
             String sql = String.format("insert into %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings);
             this.jdbcTemplate.execute(sql);
         });
+        return getAll(tableId);
     }
 
     @GetMapping
@@ -57,7 +58,7 @@ public class CrudController {
     }
 
     @PutMapping("/{id}")
-    public void update(
+    public List<Map<String, Object>> update(
             @PathVariable Long tableId,
             @PathVariable Long id,
             @RequestBody Map<String, String> keyValue
@@ -67,6 +68,7 @@ public class CrudController {
         String sql = String.format("update %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings)
                 + String.format(" where ID = %d", id);
         this.jdbcTemplate.execute(sql);
+        return getAll(tableId);
     }
 
     @DeleteMapping("/{id}")
