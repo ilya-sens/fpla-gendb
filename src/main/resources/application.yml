@@ -24,4 +24,4 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     serialization:
-      write-dates-as-timestamps: false
+      write_dates_as_timestamps: false

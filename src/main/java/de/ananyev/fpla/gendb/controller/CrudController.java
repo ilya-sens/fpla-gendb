@@ -11,13 +11,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * Created by Ilya Ananyev on 01.01.17.
  */
 @RestController
-@RequestMapping("/crud/{tableId}")
+@RequestMapping("/crud/")
 public class CrudController {
     @Inject
     private JdbcTemplate jdbcTemplate;
@@ -29,7 +30,7 @@ public class CrudController {
     private TableDefinitionRepository tableDefinitionRepository;
 
     // insert into <tableName> set <columnName1> = <value1>, <columnName2> = <value2>;
-    @PostMapping
+    @PostMapping("/{tableId}")
     public List<Map<String, Object>> insert(@PathVariable Long tableId, @RequestBody List<Map<String, String>> keyValueList)
             throws TableNotFoundException {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
@@ -41,7 +42,14 @@ public class CrudController {
         return getAll(tableId);
     }
 
-    @GetMapping
+    @PostMapping("/name/{tableName}")
+    public List<Map<String, Object>> insert(@PathVariable String tableName, @RequestBody List<Map<String, String>> keyValueList)
+      throws TableNotFoundException {
+        TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
+        return this.insert(tableDefinition.getId(), keyValueList);
+    }
+
+    @GetMapping("/{tableId}")
     public List<Map<String, Object>> getAll(@PathVariable Long tableId) {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
         String sql = String.format("select * from %s", tableDefinition.getTableName());
@@ -49,7 +57,13 @@ public class CrudController {
         return result;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/name/{tableName}")
+    public List<Map<String, Object>> getAll(@PathVariable String tableName) {
+        TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
+        return this.getAll(tableDefinition.getId());
+    }
+
+    @GetMapping("/{tableId}/{id}")
     public Map<String, Object> getRow(@PathVariable Long tableId, @PathVariable Long id) {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
         String sql = String.format("select * from %s where ID = %d", tableDefinition.getTableName(), id);
@@ -57,7 +71,13 @@ public class CrudController {
         return result;
     }
 
-    @PutMapping("/{id}")
+    @GetMapping("/name/{tableName}/{id}")
+    public Map<String, Object> getRow(@PathVariable String tableName, @PathVariable Long id) {
+        TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
+        return this.getRow(tableDefinition.getId(), id);
+    }
+
+    @PutMapping("/{tableId}/{id}")
     public List<Map<String, Object>> update(
             @PathVariable Long tableId,
             @PathVariable Long id,
@@ -71,11 +91,27 @@ public class CrudController {
         return getAll(tableId);
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/name/{tableName}/{id}")
+    public List<Map<String, Object>> update(
+      @PathVariable String tableName,
+      @PathVariable Long id,
+      @RequestBody Map<String, String> keyValue
+    ) throws TableNotFoundException {
+        TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
+        return this.update(tableDefinition.getId(), id, keyValue);
+    }
+
+    @DeleteMapping("/{tableId}/{id}")
     public void delete(@PathVariable Long tableId, @PathVariable Long id) {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
         String sql = String.format("delete from %s where ID = %d", tableDefinition.getTableName(), id);
         this.jdbcTemplate.execute(sql);
+    }
+
+    @DeleteMapping("/name/{tableName}/{id}")
+    public void delete(@PathVariable String tableName, @PathVariable Long id) {
+        TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
+        this.delete(tableDefinition.getId(), id);
     }
 
     private ArrayList<String> generateRowStrings(Map<String, String> keyValue, TableDefinition tableDefinition, boolean skipEmpty) {
@@ -90,7 +126,10 @@ public class CrudController {
                         rowStrings.add(String.format("%s = %b", columnName, columnValueBoolean));
                         break;
                     case date:
-                        rowStrings.add(String.format("%s = '%s'", columnName, keyValue.get(columnName)));
+                        Long timestamp = Long.parseLong(keyValue.get(columnName));
+                        Date date = new Date(timestamp);
+                        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        rowStrings.add(String.format("%s = '%s'", columnName, jdf.format(date)));
                         break;
                     case number:
                         int columnValueInteger = Integer.parseInt(keyValue.get(columnName));
@@ -105,7 +144,7 @@ public class CrudController {
         return rowStrings;
     }
 
-    @PostMapping("/search")
+    @PostMapping("/{tableId}/search")
     public List<Map<String, Object>> findAll(@PathVariable Long tableId, @RequestBody SearchCriteria searchCriteria) {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
         String sql = String.format("select * from %s", tableDefinition.getTableName());
@@ -134,6 +173,12 @@ public class CrudController {
             }
         }
         return result;
+    }
+
+    @DeleteMapping("/name/{tableName}/search/{id}")
+    public List<Map<String, Object>> findAll(@PathVariable String tableName, @RequestBody SearchCriteria searchCriteria) {
+        TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
+        return this.findAll(tableDefinition.getId(), searchCriteria);
     }
 
     private ArrayList<String> generateRowStringForSearch(
