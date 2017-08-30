@@ -31,22 +31,20 @@ public class CrudController {
 
     // insert into <tableName> set <columnName1> = <value1>, <columnName2> = <value2>;
     @PostMapping("/{tableId}")
-    public List<Map<String, Object>> insert(@PathVariable Long tableId, @RequestBody List<Map<String, String>> keyValueList)
+    public List<Map<String, Object>> insert(@PathVariable Long tableId, @RequestBody Map<String, String> row)
             throws TableNotFoundException {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOne(tableId);
-        keyValueList.forEach((row) -> {
-            ArrayList<String> rowStrings = this.generateRowStrings(row, tableDefinition, true);
-            String sql = String.format("insert into %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings);
-            this.jdbcTemplate.execute(sql);
-        });
+        ArrayList<String> rowStrings = this.generateRowStrings(row, tableDefinition, true);
+        String sql = String.format("insert into %s set ", tableDefinition.getTableName()) + String.join(", ", rowStrings);
+        this.jdbcTemplate.execute(sql);
         return getAll(tableId);
     }
 
     @PostMapping("/name/{tableName}")
-    public List<Map<String, Object>> insert(@PathVariable String tableName, @RequestBody List<Map<String, String>> keyValueList)
+    public List<Map<String, Object>> insert(@PathVariable String tableName, @RequestBody Map<String, String> row)
       throws TableNotFoundException {
         TableDefinition tableDefinition = this.tableDefinitionRepository.findOneByTableName(tableName).get();
-        return this.insert(tableDefinition.getId(), keyValueList);
+        return this.insert(tableDefinition.getId(), row);
     }
 
     @GetMapping("/{tableId}")
@@ -117,7 +115,7 @@ public class CrudController {
     private ArrayList<String> generateRowStrings(Map<String, String> keyValue, TableDefinition tableDefinition, boolean skipEmpty) {
         ArrayList<String> rowStrings = new ArrayList<>();
         keyValue.keySet().forEach((columnName) -> {
-            if (!skipEmpty || !keyValue.get(columnName).equals("")) {
+            if (!skipEmpty || keyValue.get(columnName) != null && !keyValue.get(columnName).equals("")) {
                 ColumnDefinition columnDefinition = this.columnDefinitionRepository
                         .findOneByTableDefinitionAndName(tableDefinition, columnName);
                 switch (columnDefinition.getType()) {
