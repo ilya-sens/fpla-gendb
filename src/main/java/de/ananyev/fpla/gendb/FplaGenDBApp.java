@@ -10,7 +10,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @SpringBootApplication
 public class FplaGenDBApp {
-    public static void main(String... agrg) {
-        SpringApplication.run(FplaGenDBApp.class, agrg);
-    }
+  public static void main(String... agrg) {
+    SpringApplication.run(FplaGenDBApp.class, agrg);
+  }
 }

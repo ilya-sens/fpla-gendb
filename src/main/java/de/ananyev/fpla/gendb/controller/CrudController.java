@@ -6,7 +6,7 @@ import de.ananyev.fpla.gendb.model.enumeration.ColumnType;
 import de.ananyev.fpla.gendb.repository.ColumnDefinitionRepository;
 import de.ananyev.fpla.gendb.repository.TableDefinitionRepository;
 import de.ananyev.fpla.gendb.util.exception.TableNotFoundException;
-import de.ananyev.fpla.lib.model.SearchCriteria;
+import de.ananyev.fpla.gendb.model.SearchCriteria;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
