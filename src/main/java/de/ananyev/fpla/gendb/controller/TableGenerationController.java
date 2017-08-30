@@ -46,7 +46,7 @@ public class TableGenerationController {
         // execute
         String sql = String.format("create table %s (", tableDefinition.getTableName())
                 + String.join(", ", rowStrings) + ")";
-        SqlExecuterUtil.execute(this.jdbcTemplate, sql).longValue();
+        SqlExecuterUtil.execute(this.jdbcTemplate, sql);
 
         // save
         this.tableDefinitionRepository.save(tableDefinition);
@@ -62,7 +62,7 @@ public class TableGenerationController {
         return tableDefinition;
     }
 
-    @PutMapping()
+    @PutMapping
     public TableDefinition updateTable(@RequestBody TableDefinition inputTableDefinition)
             throws TableNotFoundException {
         TableDefinition existingTableDefinition = this.tableDefinitionRepository
