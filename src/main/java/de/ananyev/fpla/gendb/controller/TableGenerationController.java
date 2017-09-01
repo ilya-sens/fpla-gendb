@@ -92,7 +92,9 @@ public class TableGenerationController {
             });
 
             // check which column definitions need to be updated
-            inputTableDefinition.getColumnDefinitions().forEach((inputColumnDefinition) -> {
+            inputTableDefinition.getColumnDefinitions().stream()
+              .filter((inputColumnDefinition) -> !inputColumnDefinition.getName().equals("ID"))
+              .forEach((inputColumnDefinition) -> {
                 Optional<ColumnDefinition> optionalColumnDefinition = existingColumnDefinitions.stream()
                         .filter(existingColumnDefinition -> !inputColumnDefinition.getName().equals("ID")
                                 && Objects.equals(inputColumnDefinition.getId(), existingColumnDefinition.getId()))
@@ -113,6 +115,9 @@ public class TableGenerationController {
                         this.columnDefinitionRepository.save(inputColumnDefinition);
                     }
                 } else {
+                    this.jdbcTemplate.execute(String.format("alter table %s add column %s %s",
+                      inputTableDefinition.getTableName(), inputColumnDefinition.getName(),
+                      inputColumnDefinition.getType()));
                     this.columnDefinitionRepository.save(inputColumnDefinition);
                 }
             });
